@@ -24,17 +24,19 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
         if database not in [x[0] for x in self._execute('show databases')]:
             self._execute('CREATE DATABASE %s' % self.escape(database))
         self.conn.database = database
-
-        self._execute('''CREATE TABLE IF NOT EXISTS %s (
-            `name` varchar(64) PRIMARY KEY,
-            `group` varchar(64),
-            `status` varchar(16),
-            `script` TEXT,
-            `comments` varchar(1024),
-            `rate` float(11, 4),
-            `burst` float(11, 4),
-            `updatetime` double(16, 4)
-            ) ENGINE=InnoDB CHARSET=utf8''' % self.escape(self.__tablename__))
+        if self.escape(self.__tablename__) in [x[0] for x in self._execute('show tables')]:
+            return
+        else:
+            self._execute('''CREATE TABLE IF NOT EXISTS %s (
+                `name` varchar(64) PRIMARY KEY,
+                `group` varchar(64),
+                `status` varchar(16),
+                `script` TEXT,
+                `comments` varchar(1024),
+                `rate` float(11, 4),
+                `burst` float(11, 4),
+                `updatetime` double(16, 4)
+                ) ENGINE=InnoDB CHARSET=utf8''' % self.escape(self.__tablename__))
 
     def insert(self, name, obj={}):
         obj = dict(obj)
