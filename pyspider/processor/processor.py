@@ -103,7 +103,6 @@ class Processor(object):
         '''Deal one task'''
         start_time = time.time()
         response = rebuild_response(response)
-
         try:
             assert 'taskid' in task, 'need taskid in task'
             project = task['project']

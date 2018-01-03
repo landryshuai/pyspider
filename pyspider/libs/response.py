@@ -22,7 +22,8 @@ from pyspider.libs import utils
 class Response(object):
 
     def __init__(self, status_code=None, url=None, orig_url=None, headers=CaseInsensitiveDict(),
-                 content='', cookies=None, error=None, traceback=None, save=None, js_script_result=None, time=0):
+                 content='', cookies=None, error=None, traceback=None, save=None, js_script_result=None, time=0,
+                 resResp=None):
         if cookies is None:
             cookies = {}
         self.status_code = status_code
@@ -36,6 +37,7 @@ class Response(object):
         self.save = save
         self.js_script_result = js_script_result
         self.time = time
+        self.resResp=resResp
 
     def __repr__(self):
         return u'<Response [%d]>' % self.status_code
@@ -47,6 +49,8 @@ class Response(object):
     def __nonzero__(self):
         """Returns true if `status_code` is 200 and no error."""
         return self.ok
+    def get_resource_resp(self):
+        return self.resResp
 
     @property
     def ok(self):
@@ -189,9 +193,37 @@ class Response(object):
             return True
         except:
             return False
-
-
+'''
+add by shuaijiman
+only body, header, url, status now
+r is tuple
+'''
+def rebuild_resource_resp(resp):
+    
+    r = resp[1]
+    # from pyspider.libs.pprint import pprint    
+    # pprint(r)
+    response = Response(
+        status_code=r.get('status', 599),
+        url=r.get('url', ''),
+        headers=CaseInsensitiveDict(r.get('headers', {})),
+        content=r.get('body', ''),
+        cookies=r.get('cookies', {}),
+        error=r.get('error'),
+        traceback=r.get('traceback'),
+        time=r.get('time', 0),
+        orig_url=r.get('orig_url', r.get('url', '')),
+        js_script_result=r.get('js_script_result'),
+        save=r.get('save'),
+    )
+    # from pyspider.libs.pprint import pprint    
+    # pprint(response)
+    return response
 def rebuild_response(r):
+    res_resp = [];
+    if r.get('resResp') is not None:
+        for k in enumerate(r.get('resResp')):
+            res_resp.append(rebuild_resource_resp(k))
     response = Response(
         status_code=r.get('status_code', 599),
         url=r.get('url', ''),
@@ -204,6 +236,7 @@ def rebuild_response(r):
         orig_url=r.get('orig_url', r.get('url', '')),
         js_script_result=r.get('js_script_result'),
         save=r.get('save'),
+        resResp=res_resp,
     )
     return response
 

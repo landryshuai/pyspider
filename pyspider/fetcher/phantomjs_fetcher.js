@@ -14,7 +14,7 @@ if (system.args.length !== 2) {
 } else {
   port = system.args[1];
   server = require('webserver').create();
-  console.debug = function(){};
+  // console.debug = function(){};
 
   service = server.listen(port, {
     'keepAlive': false
@@ -41,13 +41,15 @@ if (system.args.length !== 2) {
         start_time = Date.now(),
         end_time = null,
         script_executed = false,
-        script_result = null;
+        script_result = null,
+        resList=[];
 
     var fetch = JSON.parse(request.postRaw);
     console.debug(JSON.stringify(fetch, null, 2));
 
     // create and set page
     var page = webpage.create();
+    page.captureContent = [/text/, /html/, /application/,/json/]
     if (fetch.proxy) {
       if (fetch.proxy.indexOf('://') == -1){
         fetch.proxy = 'http://' + fetch.proxy
@@ -101,8 +103,16 @@ if (system.args.length !== 2) {
     };
     page.onResourceReceived = function(response) {
       console.debug("Request finished: #"+response.id+" ["+response.status+"]"+response.url);
+      
       if (first_response === null && response.status != 301 && response.status != 302) {
         first_response = response;
+      } else {
+        //不保存图片资源
+        console.debug("contentType:"+response.contentType);
+        if (response.contentType.indexOf('image') == -1 ) {
+          // console.log('resbody:1'+response.body);
+          resList.push(response)
+        }
       }
       if (page_loaded) {
         console.debug("waiting "+wait_before_end+"ms before finished.");
@@ -168,6 +178,7 @@ if (system.args.length !== 2) {
       }
 
       var body = JSON.stringify(result, null, 2);
+      // console.debug("response:"+body);
       response.writeHead(200, {
         'Cache': 'no-cache',
         'Content-Type': 'application/json',
@@ -203,6 +214,7 @@ if (system.args.length !== 2) {
         cookies: cookies,
         time: (Date.now() - start_time) / 1000,
         js_script_result: script_result,
+        resResp: resList,
         save: fetch.save
       }
     }

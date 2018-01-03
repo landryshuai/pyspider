@@ -118,8 +118,10 @@ def run(project):
         # task = module['instance'].task_join_crawl_config(task, crawl_config)
 
         fetch_result = app.config['fetch'](task)
+        # from pyspider.libs.pprint import pprint
+        # pprint(fetch_result)
         response = rebuild_response(fetch_result)
-
+        # pprint(response)
         ret = module['instance'].run_task(module['module'], task, response)
     except Exception:
         type, value, tb = sys.exc_info()
