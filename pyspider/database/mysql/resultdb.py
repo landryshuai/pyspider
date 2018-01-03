@@ -18,7 +18,7 @@ from .mysqlbase import MySQLMixin, SplitTableMixin
 
 
 class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
-    __tablename__ = ''
+    __tablename__ = None
 
     def __init__(self, host='localhost', port=3306, database='resultdb',
                  user='root', passwd=None):
@@ -36,10 +36,12 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if tablename in [x[0] for x in self._execute('show tables')]:
             return
         self._execute('''CREATE TABLE %s (
-            `taskid` varchar(64) PRIMARY KEY,
+            `taskid` varchar(64),
+            `project` varchar(64),
             `url` varchar(1024),
             `result` MEDIUMBLOB,
-            `updatetime` double(16, 4)
+            `updatetime` double(16, 4),
+            PRIMARY KEY `uniq_taskid` (`project`, `taskid`)
             ) ENGINE=InnoDB CHARSET=utf8''' % self.escape(tablename))
 
     def _parse(self, data):
@@ -62,6 +64,7 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
             self._list_project()
         obj = {
             'taskid': taskid,
+            'project': project,
             'url': url,
             'result': result,
             'updatetime': time.time(),
@@ -74,8 +77,9 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return
         tablename = self._tablename(project)
-
+        where = "`taskid` = %s and `project` = '%s' " % (self.placeholder, self.placeholder)
         for task in self._select2dic(tablename, what=fields, order='updatetime DESC',
+                                    where=where, where_values=(taskid, self.escape(project), )
                                      offset=offset, limit=limit):
             yield self._parse(task)
 
@@ -85,7 +89,7 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return 0
         tablename = self._tablename(project)
-        for count, in self._execute("SELECT count(1) FROM %s" % self.escape(tablename)):
+        for count, in self._execute("SELECT count(1) FROM %s where `project` = '%s'" % (self.escape(tablename), self.escape(project))):
             return count
 
     def get(self, project, taskid, fields=None):
@@ -94,7 +98,7 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return
         tablename = self._tablename(project)
-        where = "`taskid` = %s" % self.placeholder
+        where = "`taskid` = %s and `project` = '%s' " % (self.placeholder, self.placeholder)
         for task in self._select2dic(tablename, what=fields,
-                                     where=where, where_values=(taskid, )):
+                                     where=where, where_values=(taskid, self.escape(project), )):
             return self._parse(task)
