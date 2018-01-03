@@ -24,7 +24,7 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
         if database not in [x[0] for x in self._execute('show databases')]:
             self._execute('CREATE DATABASE %s' % self.escape(database))
         self.conn.database = database
-        if self.escape(self.__tablename__) in [x[0] for x in self._execute('show tables')]:
+        if self.__tablename__ in [x[0] for x in self._execute('show tables')]:
             return
         else:
             self._execute('''CREATE TABLE IF NOT EXISTS %s (
