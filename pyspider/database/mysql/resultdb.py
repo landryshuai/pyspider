@@ -77,7 +77,7 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return
         tablename = self.__tablename__
-        where = "`taskid` = %s and `project` = '%s' " % (self.placeholder, self.placeholder)
+        where = "`taskid` = '%s' and `project` = '%s' " % (self.placeholder, self.placeholder)
         for task in self._select2dic(tablename, what=fields, order='updatetime DESC',
                                     where=where, where_values=(taskid, project, ),
                                      offset=offset, limit=limit):
@@ -98,7 +98,7 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return
         tablename = self.__tablename__
-        where = "`taskid` = %s and `project` = '%s' " % (self.placeholder, self.placeholder)
+        where = "`taskid` = '%s' and `project` = '%s' " % (self.placeholder, self.placeholder)
         for task in self._select2dic(tablename, what=fields,
                                      where=where, where_values=(taskid, project, )):
             return self._parse(task)
