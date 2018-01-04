@@ -71,7 +71,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
     def load_tasks(self, status, project=None, fields=None):
         if project and project not in self.projects:
             return
-        where = "`status` = %s and `project` = '%s'" % (self.placeholder, self.placeholder)
+        where = "`status` = %s and `project` = %s" % (self.placeholder, self.placeholder)
 
         if project:
             projects = [project, ]
@@ -90,7 +90,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             self._list_project()
         if project not in self.projects:
             return None
-        where = "`taskid` = %s and `project` = '%s'" % (self.placeholder, self.placeholder)
+        where = "`taskid` = %s and `project` = %s" % (self.placeholder, self.placeholder)
         tablename = self.__tablename__
         for each in self._select2dic(tablename, what=fields, where=where, where_values=(taskid, project),):
             return self._parse(each)
@@ -103,7 +103,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
         if project not in self.projects:
             return result
         tablename = self.__tablename__
-        for status, count in self._execute("SELECT `status`, count(1) FROM %s WHERE `project` = '%s' GROUP BY `status`" %
+        for status, count in self._execute("SELECT `status`, count(1) FROM %s WHERE `project` = %s GROUP BY `status`" %
                                            (self.escape(tablename),project,)):
             result[status] = count
         return result
@@ -132,7 +132,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
         obj['updatetime'] = time.time()
         return self._update(
             tablename,
-            where="`taskid` = %s and project = '%s'" % (self.placeholder, self.placeholder),
+            where="`taskid` = %s and project = %s" % (self.placeholder, self.placeholder),
             where_values=(taskid, project,),
             **self._stringify(obj)
         )
