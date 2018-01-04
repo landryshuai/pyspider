@@ -19,8 +19,7 @@ from .mysqlbase import MySQLMixin, SplitTableMixin
 
 
 class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
-    __tablename__ = None
-
+    __tablename__ ="taskdb"
     def __init__(self, host='localhost', port=3306, database='taskdb',
                  user='root', passwd=None):
         self.database_name = database
@@ -33,7 +32,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
 
     def _create_project(self, project):
         assert re.match(r'^\w+$', project) is not None
-        tablename = self._tablename(project)
+        tablename = self.__tablename__
         if tablename in [x[0] for x in self._execute('show tables')]:
             return
         self._execute('''CREATE TABLE IF NOT EXISTS %s (
@@ -80,9 +79,9 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             projects = self.projects
 
         for project in projects:
-            tablename = self._tablename(project)
+            tablename = self.__tablename__
             for each in self._select2dic(
-                tablename, what=fields, where=where, where_values=(status, self.escape(project),)
+                tablename, what=fields, where=where, where_values=(status, project,)
             ):
                 yield self._parse(each)
 
@@ -91,9 +90,9 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             self._list_project()
         if project not in self.projects:
             return None
-        where = "`status` = %s and `project` = '%s'" % (self.placeholder, self.placeholder)
-        tablename = self._tablename(project)
-        for each in self._select2dic(tablename, what=fields, where=where, where_values=(taskid, self.escape(project)),):
+        where = "`taskid` = %s and `project` = '%s'" % (self.placeholder, self.placeholder)
+        tablename = self.__tablename__
+        for each in self._select2dic(tablename, what=fields, where=where, where_values=(taskid, project),):
             return self._parse(each)
         return None
 
@@ -103,9 +102,9 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             self._list_project()
         if project not in self.projects:
             return result
-        tablename = self._tablename(project)
+        tablename = self.__tablename__
         for status, count in self._execute("SELECT `status`, count(1) FROM %s WHERE `project` = '%s' GROUP BY `status`" %
-                                           (self.escape(tablename),self.escape(project),)):
+                                           (self.escape(tablename),project,)):
             result[status] = count
         return result
 
@@ -119,7 +118,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
         obj['taskid'] = taskid
         obj['project'] = project
         obj['updatetime'] = time.time()
-        tablename = self._tablename(project)
+        tablename = self.__tablename__
         return self._insert(tablename, **self._stringify(obj))
 
     def update(self, project, taskid, obj={}, **kwargs):
@@ -127,13 +126,13 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             self._list_project()
         if project not in self.projects:
             raise LookupError
-        tablename = self._tablename(project)
+        tablename = self.__tablename__
         obj = dict(obj)
         obj.update(kwargs)
         obj['updatetime'] = time.time()
         return self._update(
             tablename,
             where="`taskid` = %s and project = '%s'" % (self.placeholder, self.placeholder),
-            where_values=(taskid, self.escape(project),),
+            where_values=(taskid, project,),
             **self._stringify(obj)
         )
