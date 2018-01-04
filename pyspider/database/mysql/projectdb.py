@@ -48,20 +48,20 @@ class ProjectDB(MySQLMixin, BaseProjectDB, BaseDB):
         obj = dict(obj)
         obj.update(kwargs)
         obj['updatetime'] = time.time()
-        ret = self._update(where="`name` = '%s'" % self.placeholder, where_values=(name, ), **obj)
+        ret = self._update(where="`name` = %s" % self.placeholder, where_values=(name, ), **obj)
         return ret.rowcount
 
     def get_all(self, fields=None):
         return self._select2dic(what=fields)
 
     def get(self, name, fields=None):
-        where = "`name` = '%s'" % self.placeholder
+        where = "`name` = %s" % self.placeholder
         for each in self._select2dic(what=fields, where=where, where_values=(name, )):
             return each
         return None
 
     def drop(self, name):
-        where = "`name` = '%s'" % self.placeholder
+        where = "`name` = %s" % self.placeholder
         return self._delete(where=where, where_values=(name, ))
 
     def check_update(self, timestamp, fields=None):
