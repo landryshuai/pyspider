@@ -47,14 +47,18 @@ class SplitTableMixin(object):
     def _list_project(self):
         self._last_update_projects = time.time()
         self.projects = set()
-        if self.__tablename__:
-            prefix = '%s_' % self.__tablename__
-        else:
-            prefix = ''
-        for project, in self._execute('show tables;'):
-            if project.startswith(prefix):
-                project = project[len(prefix):]
-                self.projects.add(project)
+        # comment by shuaijiman
+        # if self.__tablename__:
+        #     prefix = '%s_' % self.__tablename__
+        # else:
+        #     prefix = ''
+        # for project, in self._execute('show tables;'):
+        #     if project.startswith(prefix):
+        #         project = project[len(prefix):]
+        #         self.projects.add(project)
+        tablename = self.__tablename__
+        for project, in self._execute('select project from %s group by project' % self.escape(tablename)):
+            self.projects.add(project)
 
     def drop(self, project):
         if project not in self.projects:
@@ -62,5 +66,5 @@ class SplitTableMixin(object):
         if project not in self.projects:
             return
         tablename = self._tablename(project)
-        self._execute("DROP TABLE %s" % self.escape(tablename))
+        self._execute("delete from %s where project = %s " % (self.escape(tablename), project,))
         self._list_project()
