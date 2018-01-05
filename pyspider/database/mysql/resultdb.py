@@ -89,7 +89,9 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return 0
         tablename = self.__tablename__
-        for count, in self._execute("SELECT count(1) FROM %s where `project` = %s" % self.escape(tablename), (project,)):
+        sql_query = "SELECT count(1) FROM %s " % self.escape(tablename)
+        sql_query = sql_query + "WHERE `project` = %s"
+        for count, in self._execute(sql_query, (project,)):
             return count
 
     def get(self, project, taskid, fields=None):

@@ -103,8 +103,9 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
         if project not in self.projects:
             return result
         tablename = self.__tablename__
-        for status, count in self._execute("SELECT `status`, count(1) FROM %s WHERE `project` = %s GROUP BY `status`" %
-                                           self.escape(tablename), (project,) ):
+        sql_query = "SELECT `status`, count(1) FROM %s " % self.escape(tablename)
+        sql_query = sql_query + " WHERE `project` = %s GROUP BY `status`"
+        for status, count in self._execute(sql_query, (project,)):
             result[status] = count
         return result
 
