@@ -65,6 +65,6 @@ class SplitTableMixin(object):
             self._list_project()
         if project not in self.projects:
             return
-        tablename = self._tablename(project)
-        self._execute("delete from %s where project = %s " % (self.escape(tablename), project,))
+        tablename = self.__tablename__
+        self._execute("delete from %s where project = %s " % self.escape(tablename), (project,))
         self._list_project()

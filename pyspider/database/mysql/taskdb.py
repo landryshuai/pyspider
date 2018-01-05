@@ -104,7 +104,7 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
             return result
         tablename = self.__tablename__
         for status, count in self._execute("SELECT `status`, count(1) FROM %s WHERE `project` = %s GROUP BY `status`" %
-                                           (self.escape(tablename),project,)):
+                                           self.escape(tablename), (project,) ):
             result[status] = count
         return result
 
@@ -133,6 +133,6 @@ class TaskDB(MySQLMixin, SplitTableMixin, BaseTaskDB, BaseDB):
         return self._update(
             tablename,
             where="`taskid` = %s and project = %s" % (self.placeholder, self.placeholder),
-            where_values=(taskid, project,),
+            where_values=(taskid, project),
             **self._stringify(obj)
         )
