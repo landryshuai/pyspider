@@ -77,9 +77,9 @@ class ResultDB(MySQLMixin, SplitTableMixin, BaseResultDB, BaseDB):
         if project not in self.projects:
             return
         tablename = self.__tablename__
-        where = "`taskid` = %s and `project` = %s" % (self.placeholder, self.placeholder)
+        where = "`project` = %s" % self.placeholder
         for task in self._select2dic(tablename, what=fields, order='updatetime DESC',
-                                    where=where, where_values=(taskid, project, ),
+                                    where=where, where_values=(project, ),
                                      offset=offset, limit=limit):
             yield self._parse(task)
 
