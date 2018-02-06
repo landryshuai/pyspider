@@ -49,7 +49,8 @@ if (system.args.length !== 2) {
 
     // create and set page
     var page = webpage.create();
-    page.captureContent = [/text/, /html/, /application/,/json/]
+    // page.captureContent = [/text/, /html/, /application/,/json/]
+    page.captureContent = ['.*']
     if (fetch.proxy) {
       if (fetch.proxy.indexOf('://') == -1){
         fetch.proxy = 'http://' + fetch.proxy
@@ -109,8 +110,8 @@ if (system.args.length !== 2) {
       } else {
         //不保存图片资源
         console.debug("contentType:"+response.contentType);
-        if (response.contentType.indexOf('image') == -1 ) {
-          // console.log('resbody:1'+response.body);
+        if (response.contentType && response.contentType.indexOf('image') == -1 ) {
+           console.log('resbody:1'+response.body);
           resList.push(response)
         }
       }
