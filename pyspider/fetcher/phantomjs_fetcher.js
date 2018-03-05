@@ -64,6 +64,15 @@ if (system.args.length !== 2) {
       width: fetch.js_viewport_width || 1024,
       height: fetch.js_viewport_height || 768*3
     }
+    //ADD browser cookies
+    if (fetch.headers['Cookie']) {
+      fetch.headers['Cookie'].split("; ").forEach(function(e) {
+        console.debug(e);
+        console.debug("{"+e.split("={")[1]);
+        phantom.addCookie(JSON.parse("{"+e.split("={", 2)[1]));
+      });
+    }
+    delete fetch.headers.Cookie
     if (fetch.headers) {
       fetch.headers['Accept-Encoding'] = undefined;
       fetch.headers['Connection'] = undefined;
@@ -111,7 +120,7 @@ if (system.args.length !== 2) {
         //不保存图片资源
         console.debug("contentType:"+response.contentType);
         if (response.contentType && response.contentType.indexOf('image') == -1 ) {
-           console.log('resbody:1'+response.body);
+          // console.log('resbody:1'+response.body);
           resList.push(response)
         }
       }
